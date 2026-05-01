@@ -2,21 +2,34 @@ pipeline {
     agent any
 
     stages {
-        stage('Pull Code') {
+        stage('Build Java App') {
             steps {
-                git 'https://github.com/GPBankar/HELLOWORLDD.git'
+                sh 'mvn clean package'
             }
         }
 
-        stage('Compile') {
+        stage('Build Docker Image') {
             steps {
-                sh 'javac HelloWorld.java'
+                sh 'docker build -t my-java-app .'
             }
         }
 
-        stage('Execute') {
+        stage('Run Docker Container') {
             steps {
-                sh 'java HelloWorld'
+                sh 'docker run --name my-java-container -d my-java-app'
+            }
+        }
+
+        stage('Verify Container Output') {
+            steps {
+                sh 'docker logs my-java-container'
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                sh 'docker stop my-java-container || true'
+                sh 'docker rm my-java-container || true'
             }
         }
     }
